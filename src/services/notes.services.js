@@ -33,23 +33,24 @@ const addNote = async (note) => {
 const deleteNote = async (id) => {
     if(!client) return;
 
-    await getNoteCollections().deleteOne({_id : ObjectId(id)});
-    return id;
+    const result = await getNoteCollections().deleteOne({_id : ObjectId(id)});
+    if(result.deletedCount > 0) return id;
+    return undefined;
 }
 
 const updateNote = async (updatedNote) => {
     if(!client) return;
 
-    const updatedNoteCopy = {...updatedNote};
-    delete updatedNoteCopy.id;
-
-    const filter = { _id : ObjectId(updatedNote.id) }
+    const filter = { _id : ObjectId(updatedNote._id) }
     const updateDoc = {
-        $set : {...updatedNoteCopy, _id : ObjectId(updatedNote.id)}
+        $set : {...updatedNote, _id : ObjectId(updatedNote._id)}
     };
 
-    await getNoteCollections().updateOne(filter, updateDoc);
-    return updatedNote;
+    const result = await getNoteCollections().updateOne(filter, updateDoc);
+
+    if(result.matchedCount > 0)
+        return updatedNote;
+    return undefined;
 }
 
 export default {getNote, getNotes, addNote, updateNote, deleteNote};
