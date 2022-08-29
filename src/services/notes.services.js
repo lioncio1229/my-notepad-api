@@ -38,6 +38,12 @@ const deleteNote = async (id) => {
     return undefined;
 }
 
+const deleteAll = async () => {
+    if(!client) return;
+
+    await getNoteCollections().deleteMany({});
+};
+
 const updateNote = async (updatedNote) => {
     if(!client) return;
 
@@ -53,4 +59,4 @@ const updateNote = async (updatedNote) => {
     return undefined;
 }
 
-export default {getNote, getNotes, addNote, updateNote, deleteNote};
+export default {getNote, getNotes, addNote, updateNote, deleteNote, deleteAll};
