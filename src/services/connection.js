@@ -2,8 +2,9 @@ import { MongoClient } from "mongodb";
 import dotenv from 'dotenv';
 dotenv.config();
 
-const env = process.env;
-const uri = `mongodb+srv://${env.mongodb_username}:${env.mongodb_password}@cluster0.ketws38.mongodb.net/?retryWrites=true&w=majority`;
+// const env = process.env;
+// const uri = `mongodb+srv://${env.mongodb_username}:${env.mongodb_password}@cluster0.ketws38.mongodb.net/?retryWrites=true&w=majority`;
+const uri = `mongodb+srv://lioncio1229:Ironman_1229@cluster0.ketws38.mongodb.net/?retryWrites=true&w=majority`;
 
 export const client = new MongoClient(uri);
 
