@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
-import connect from './src/services/connection.js';
-import notesRouter from './src/routes/notes.router.js';
+import connect from './services/connection.js';
+import notesRouter from './routes/notes.router.js';
 import fs from 'fs';
 import dotenv from "dotenv";
 dotenv.config();
@@ -24,4 +24,4 @@ app.get('/', (req, res) => {
 app.use('/notes', notesRouter.router);
 
 connect();
-app.listen(PORT, ()=> console.log(`Listening on port ${PORT}`));
+app.listen(PORT, ()=> console.log(`Listening on host ${PORT}`));
