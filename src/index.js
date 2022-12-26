@@ -3,6 +3,7 @@ import cors from 'cors';
 import sessions from 'express-session';
 import connect from './services/connection.js';
 import notesRouter from './routes/notes.router.js';
+import usersRouter from './routes/users.router.js';
 import fs from 'fs';
 import dotenv from "dotenv";
 dotenv.config();
@@ -17,7 +18,7 @@ if(NODE_ENV === 'development')
 {
     const delay = async (req, res, next) => {
         await new Promise((resolve) => {
-            setTimeout(resolve, parseInt(900));
+            setTimeout(resolve, 900);
         });
         next();
     };
@@ -57,7 +58,8 @@ app.get('/', (req, res) => {
     });
 });
 
-app.use('/notes', notesRouter.router);
+app.use('/api/user', usersRouter.router);
+app.use('/api/notes', notesRouter.router);
 
 connect();
 app.listen(PORT, ()=> console.log(`Listening on host ${PORT}`));
