@@ -1,14 +1,14 @@
 import { client } from "./connection.js";
 
 
-const getUsersCollections = () => {
+export const getUsersCollections = () => {
     try
     {
         return client.db('my_notepad').collection('users');
     }
     catch(e) 
     {
-        console.log(e);
+        console.log(e.message);
     }
 };
 
@@ -33,9 +33,9 @@ const updateUser = async (user) => {
     };
 
     const result = await getUsersCollections().updateOne(filter, updateDoc);
-
-    if(result.matchedCount > 0)
-        return user;
+    
+    if(result.matchedCount > 0) 
+        return await getUser(user._id);
     return undefined;
 }
 
@@ -45,8 +45,7 @@ const upsetUser = async (user) => {
     const _user = await getUser(user._id);
     if(_user) 
     {
-        const updatedUser = await updateUser(user);
-        return updatedUser;
+        return await updateUser(user);
     }
     const newUser = await addUser(user);
     return newUser;

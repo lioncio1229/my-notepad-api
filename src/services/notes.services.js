@@ -1,62 +1,72 @@
 import {client} from "./connection.js";
+import { getUsersCollections } from "./users.services.js";
 import { ObjectId } from "mongodb";
 
-const getNoteCollections = () => {
-    try
-    {
-        return client.db('my_notepad').collection('notes');
-    }
-    catch(e) 
-    {
-        console.log(e);
-    }
-};
 
-const getNotes = async () => {
-    if(!client) return;
-    const cursor = getNoteCollections().find();
-    return await cursor.toArray(); 
-};
-
-const getNote = async (id) => {
-    if(!client) return;
-    return await getNoteCollections().findOne({_id : ObjectId(id)});
+function handleError(googleId)
+{
+    if(!client) throw new Error("Not connected to database.");
+    if(!googleId) throw new Error("Session is terminated. Please Login.");
 }
 
-const addNote = async (note) => {
-    if(!client) return;
+const getNotes = async (googleId) => {
+    handleError(googleId);
 
-    await getNoteCollections().insertOne(note);
-    return note;
-}
+    const user = await getUsersCollections().findOne({_id : googleId});
+    if(!user) throw new Error("Can't find user");
 
-const deleteNote = async (id) => {
-    if(!client) return;
-
-    const result = await getNoteCollections().deleteOne({_id : ObjectId(id)});
-    if(result.deletedCount > 0) return id;
-    return undefined;
-}
-
-const deleteAll = async () => {
-    if(!client) return;
-
-    await getNoteCollections().deleteMany({});
+    return user.notes;
 };
 
-const updateNote = async (updatedNote) => {
-    if(!client) return;
+const getNote = async (googleId, noteId) => {
+    handleError(googleId);
 
-    const filter = { _id : ObjectId(updatedNote._id) }
-    const updateDoc = {
-        $set : {...updatedNote, _id : ObjectId(updatedNote._id)}
+    const user = await getUsersCollections().findOne({_id : googleId});
+    if(!user) throw new Error("Can't find user");
+
+    const note = user.notes.find(note => note._id.toString() === noteId);
+
+    if(note) return note;
+    throw new Error("Can't find note");
+}
+
+const addNote = async (googleId, note) => {
+    handleError(googleId);
+    
+    const noteWithId = {...note, _id : new ObjectId()};
+    await getUsersCollections().updateOne({_id : googleId}, {$push : {notes : noteWithId}});
+    return noteWithId;
+}
+
+const deleteNote = async (googleId, noteId) => {
+    handleError(googleId);
+
+    const result = await getUsersCollections().updateOne({_id : googleId}, {$pull : {notes : {_id : ObjectId(noteId)}}});
+    if(result.modifiedCount > 0) return noteId;
+    throw new Error('Note id not found');
+}
+
+const deleteAll = async (googleId) => {
+    handleError(googleId);
+
+    await getUsersCollections().updateOne({_id : googleId}, {$set : {notes : []}});
+};
+
+const updateNote = async (googleId, updatedNote) => {
+    handleError(googleId);
+
+    const id = ObjectId(updatedNote._id);
+    const filter = { _id : googleId, 'notes._id' : id};
+    const updatedDoc = {
+        $set : {'notes.$' : {...updatedNote, _id : id}}
     };
 
-    const result = await getNoteCollections().updateOne(filter, updateDoc);
+    const result = await getUsersCollections().updateOne(filter, updatedDoc);
 
-    if(result.matchedCount > 0)
+    if(result && result.matchedCount > 0)
         return updatedNote;
-    return undefined;
+    
+    throw new Error('Update Field');
 }
 
 export default {getNote, getNotes, addNote, updateNote, deleteNote, deleteAll};

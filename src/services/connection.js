@@ -17,6 +17,6 @@ export default async function connect()
     }
     catch(e)
     {
-        console.log(e);
+        console.log(e.message);
     }
 }

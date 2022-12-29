@@ -1,18 +1,22 @@
 import express from 'express';
 import cors from 'cors';
 import sessions from 'express-session';
+import { OAuth2Client } from 'google-auth-library';
 import connect from './services/connection.js';
 import notesRouter from './routes/notes.router.js';
 import usersRouter from './routes/users.router.js';
+import usersServices from './services/users.services.js';
 import fs from 'fs';
 import dotenv from "dotenv";
 dotenv.config();
 
-const {NODE_ENV, SECRET_KEY} = process.env;
+const {NODE_ENV, SECRET_KEY, CLIENT_ID} = process.env;
 
 const app = express();
 const PORT = NODE_ENV === 'development' ? 3000 : process.env.PORT;
 const oneDay = 1000 * 60 * 60 * 24;
+
+const client = new OAuth2Client(CLIENT_ID);
 
 if(NODE_ENV === 'development')
 {
@@ -56,6 +60,25 @@ app.get('/', (req, res) => {
         res.setHeader('Content-Type', 'text/html');
         res.send(data.toString());
     });
+});
+
+app.post('/api/v1/auth/google', async (req, res) => {
+    try{
+        const {token} = req.body;
+        
+        const ticket = await client.verifyIdToken({
+            idToken : token,
+            audience : CLIENT_ID,
+        });
+        const {sub : _id, name, email, picture} = ticket.getPayload();
+        req.session._id = _id;
+        const user = await usersServices.upsetUser({_id, name, email, picture});
+        res.send(user);
+    }
+    catch(e)
+    {
+        res.status(500).send(e.message);
+    }
 });
 
 app.use('/api/user', usersRouter.router);

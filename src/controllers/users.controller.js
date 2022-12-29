@@ -10,7 +10,7 @@ async function getUser(req, res)
     }
     catch(e)
     {
-        res.status(400).send(`Can't get user. <br><br>${e}`);
+        res.status(400).send(`Can't get user. <br><br>${e.message}`);
     }
 }
 
@@ -24,7 +24,7 @@ async function upsetUser(req, res)
     }
     catch(e)
     {
-        res.status(400).send(`Can't add/update user. <br><br>${e}`);
+        res.status(400).send(`Can't add/update user. <br><br>${e.message}`);
     }
 }
 
@@ -41,7 +41,7 @@ async function upsetUser(req, res)
     }
     catch(e)
     {
-        res.status(400).send(`Can't delete user. <br><br>${e}`);
+        res.status(400).send(`Can't delete user. <br><br>${e.message}`);
     }
 }
 
@@ -54,7 +54,7 @@ async function deleteAll(req, res)
     }
     catch(e)
     {
-        res.status(400).send(`Can't delete all users. <br><br>${e}`);
+        res.status(400).send(`Can't delete all users. <br><br>${e.message}`);
     }
 }
 
