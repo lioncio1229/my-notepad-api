@@ -47,7 +47,7 @@ const upsetUser = async (user) => {
     {
         return await updateUser(user);
     }
-    const newUser = await addUser(user);
+    const newUser = await addUser({...user, notes : []});
     return newUser;
 }
 

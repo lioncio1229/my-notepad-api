@@ -22,7 +22,7 @@ if(NODE_ENV === 'development')
 {
     const delay = async (req, res, next) => {
         await new Promise((resolve) => {
-            setTimeout(resolve, 900);
+            setTimeout(resolve, 200);
         });
         next();
     };
@@ -41,10 +41,10 @@ app.use(express.json());
 
 const sessionObj = {
     secret: SECRET_KEY,
-    name : 'mnp_id',
+    name : 'mnp.sid',
     saveUninitialized: true,
-    cookie: { maxAge: oneDay },
-    resave: false
+    cookie: { maxAge: oneDay},
+    resave: true
 }
 
 if(NODE_ENV === 'production')
@@ -72,6 +72,7 @@ app.post('/api/v1/auth/google', async (req, res) => {
         });
         const {sub : _id, name, email, picture} = ticket.getPayload();
         req.session._id = _id;
+        
         const user = await usersServices.upsetUser({_id, name, email, picture});
         res.send(user);
     }
