@@ -4,12 +4,12 @@ async function getNotes(req, res)
 {
     try
     {
-        const result = await notesServices.getNotes();
+        const result = await notesServices.getNotes(req.session._id);
         res.status(200).send(result);
     }
     catch(e)
     {
-        res.status(400).send(`Can't fetch notes. <br><br>${e}`);
+        res.status(400).send(`Can't fetch notes. <br><br> ${e.message}`);
     }
 }
 
@@ -17,7 +17,9 @@ async function getNotes(req, res)
 {
     try
     {
-        const result = await notesServices.getNote(req.params._id);
+        const googleId = req.session._id;
+        const noteId = req.params._id;
+        const result = await notesServices.getNote(googleId, noteId);
         res.status(200).send(result);
     }
     catch(e)
@@ -30,13 +32,14 @@ async function getNotes(req, res)
 {
     try
     {
-        const newNote = req.body;
-        await notesServices.addNote(newNote);
+        const googleId = req.session._id;
+        let newNote = req.body;
+        newNote = await notesServices.addNote(googleId, newNote);
         res.status(200).send(newNote);
     }
     catch(e)
     {
-        res.status(400).send(`Can't add note. <br><br>${e}`);
+        res.status(400).send(`Can't add note. <br><br>${e.message}`);
     }
 }
 
@@ -44,16 +47,14 @@ async function getNotes(req, res)
 {
     try
     {
-        const id = req.params._id;
-        const resultId = await notesServices.deleteNote(id);
-        if(resultId)
-            res.status(200).send(resultId);
-        else 
-        res.status(404).send(`Can't delete note with the id of ${id}. ID not found`);
+        const googleId = req.session._id;
+        const noteId = req.params._id;
+        const resultId = await notesServices.deleteNote(googleId, noteId);
+        res.status(200).send(resultId);
     }
     catch(e)
     {
-        res.status(400).send(`Can't delete note. <br><br>${e}`);
+        res.status(400).send(`Can't delete note. <br><br>${e.message}`);
     }
 }
 
@@ -61,12 +62,13 @@ async function deleteAll(req, res)
 {
     try
     {
-        await notesServices.deleteAll();
+        const googleId = req.session._id;
+        await notesServices.deleteAll(googleId);
         res.status(200).send('All notes deleted');
     }
     catch(e)
     {
-        res.status(400).send(`Can't delete all notes. <br><br>${e}`);
+        res.status(400).send(`Can't delete all notes. <br><br>${e.message}`);
     }
 }
 
@@ -74,16 +76,15 @@ async function deleteAll(req, res)
 {
     try
     {
+        const googleId = req.session._id;
         const note = req.body;
-        const updatedNote = await notesServices.updateNote(note);
-        if(updatedNote)
-            res.status(200).send(updatedNote);
-        else
-            res.status(404).send(`Note not found`);
+
+        const updatedNote = await notesServices.updateNote(googleId, note);
+        res.status(200).send(updatedNote);
     }
     catch(e)
     {
-        res.status(400).send(`Can't update note. <br><br>${e}`);
+        res.status(400).send(`Can't update note. <br><br>${e.message}`);
     }
 }
 
