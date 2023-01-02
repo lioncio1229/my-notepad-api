@@ -5,7 +5,8 @@ async function getUser(req, res)
 {
     try
     {
-        const result = await usersServices.getUser(req.params._id);
+        const googleId = req.session._id;
+        const result = await usersServices.getUser(googleId);
         res.status(200).send(result);
     }
     catch(e)

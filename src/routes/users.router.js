@@ -3,7 +3,7 @@ import usersController from '../controllers/users.controller.js';
 
 const router = express.Router();
 
-router.get('/:_id', usersController.getUser);
+router.get('/', usersController.getUser);
 router.post('/', usersController.upsetUser);
 router.delete('/:_id', usersController.deleteUser);
 router.delete('/', usersController.deleteAll);
