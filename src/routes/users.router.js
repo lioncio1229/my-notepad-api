@@ -7,5 +7,6 @@ router.get('/', usersController.getUser);
 router.post('/', usersController.upsetUser);
 router.delete('/:_id', usersController.deleteUser);
 router.delete('/', usersController.deleteAll);
+router.post('/logout', usersController.signoutUser);
 
 export default {router};
