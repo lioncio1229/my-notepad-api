@@ -5,7 +5,8 @@ async function getUser(req, res)
 {
     try
     {
-        const result = await usersServices.getUser(req.params._id);
+        const googleId = req.session._id;
+        const result = await usersServices.getUser(googleId);
         res.status(200).send(result);
     }
     catch(e)
@@ -58,4 +59,17 @@ async function deleteAll(req, res)
     }
 }
 
-export default { getUser, upsetUser, deleteUser, deleteAll};
+async function signoutUser(req, res)
+{
+    try
+    {
+        req.session.destroy();
+        res.status(200).send('Signout Successfully');
+    }
+    catch(e)
+    {
+        res.status(400).send(`Can't sign-out user. <br><br>${e.message}`);
+    }
+}
+
+export default { getUser, upsetUser, deleteUser, deleteAll, signoutUser};

@@ -1,6 +1,12 @@
 import { client } from "./connection.js";
 
 
+function handleError(googleId)
+{
+    if(!client) throw new Error("Not connected to database.");
+    if(!googleId) throw new Error("Google Id is undefined.");
+}
+
 export const getUsersCollections = () => {
     try
     {
@@ -13,7 +19,8 @@ export const getUsersCollections = () => {
 };
 
 const getUser = async (_id) => {
-    if(!client) return;
+    handleError(_id);
+    
     return await getUsersCollections().findOne({_id});
 }
 

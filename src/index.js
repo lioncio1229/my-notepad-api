@@ -62,6 +62,7 @@ app.get('/', (req, res) => {
     });
 });
 
+//Authenticate User
 app.post('/api/v1/auth/google', async (req, res) => {
     try{
         const {token} = req.body;
