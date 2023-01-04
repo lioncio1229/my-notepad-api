@@ -1,6 +1,5 @@
 import {client} from "./connection.js";
 import { getUsersCollections } from "./users.services.js";
-import { ObjectId } from "mongodb";
 
 
 function handleError(googleId)
@@ -24,7 +23,7 @@ const getNote = async (googleId, noteId) => {
     const user = await getUsersCollections().findOne({_id : googleId});
     if(!user) throw new Error("Can't find user");
 
-    const note = user.notes.find(note => note._id.toString() === noteId);
+    const note = user.notes.find(note => note._id === noteId);
 
     if(note) return note;
     throw new Error("Can't find note");
@@ -33,15 +32,14 @@ const getNote = async (googleId, noteId) => {
 const addNote = async (googleId, note) => {
     handleError(googleId);
     
-    const noteWithId = {...note, _id : new ObjectId()};
-    await getUsersCollections().updateOne({_id : googleId}, {$push : {notes : noteWithId}});
-    return noteWithId;
+    await getUsersCollections().updateOne({_id : googleId}, {$push : {notes : note}});
+    return note;
 }
 
 const deleteNote = async (googleId, noteId) => {
     handleError(googleId);
 
-    const result = await getUsersCollections().updateOne({_id : googleId}, {$pull : {notes : {_id : ObjectId(noteId)}}});
+    const result = await getUsersCollections().updateOne({_id : googleId}, {$pull : {notes : {_id : noteId}}});
     if(result.modifiedCount > 0) return noteId;
     throw new Error('Note id not found');
 }
@@ -55,7 +53,7 @@ const deleteAll = async (googleId) => {
 const updateNote = async (googleId, updatedNote) => {
     handleError(googleId);
 
-    const id = ObjectId(updatedNote._id);
+    const id = updatedNote._id;
     const filter = { _id : googleId, 'notes._id' : id};
     const updatedDoc = {
         $set : {'notes.$' : {...updatedNote, _id : id}}
