@@ -43,6 +43,21 @@ async function getNotes(req, res)
     }
 }
 
+ async function addNotes(req, res)
+{
+    try
+    {
+        const googleId = req.session._id;
+        let {notes} = req.body;
+        notes = await notesServices.addNotes(googleId, notes);
+        res.status(200).send(notes);
+    }
+    catch(e)
+    {
+        res.status(400).send(`Can't add notes. <br><br>${e.message}`);
+    }
+}
+
  async function deleteNote(req, res)
 {
     try
@@ -88,4 +103,12 @@ async function deleteAll(req, res)
     }
 }
 
-export default { getNotes, getNote, addNote, deleteNote, updateNote, deleteAll};
+export default {
+  getNotes,
+  getNote,
+  addNote,
+  addNotes,
+  deleteNote,
+  updateNote,
+  deleteAll,
+};

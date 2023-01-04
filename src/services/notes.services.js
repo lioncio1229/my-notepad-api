@@ -36,6 +36,13 @@ const addNote = async (googleId, note) => {
     return note;
 }
 
+const addNotes = async (googleId, notes) => {
+    handleError(googleId);
+
+    await getUsersCollections().updateOne({_id : googleId}, {$push : {notes : {$each : notes}}});
+    return notes;
+}
+
 const deleteNote = async (googleId, noteId) => {
     handleError(googleId);
 
@@ -67,4 +74,12 @@ const updateNote = async (googleId, updatedNote) => {
     throw new Error('Update Field');
 }
 
-export default {getNote, getNotes, addNote, updateNote, deleteNote, deleteAll};
+export default {
+  getNote,
+  getNotes,
+  addNote,
+  addNotes,
+  updateNote,
+  deleteNote,
+  deleteAll,
+};
