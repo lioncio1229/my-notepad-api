@@ -51,7 +51,7 @@ if(NODE_ENV === 'production')
 {
     app.set('trust proxy', 1);
     sessionObj.cookie.secure = true;
-    sessionObj.cookie.sameSite = 'none;
+    sessionObj.cookie.sameSite = 'none';
 }
 
 app.use(sessions(sessionObj));
