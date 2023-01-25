@@ -27,8 +27,7 @@ async function authenticate(req, res)
         req.session._id = _id;
         
         await usersServices.upsetUser({_id, name, email, picture});
-        const encryptedToken = oauthServices.encrypt_token(id_token, AUTH_SECRETH_KEY);
-        res.send(encryptedToken);
+        res.send(id_token);
     }
     catch(e)
     {
@@ -36,4 +35,28 @@ async function authenticate(req, res)
     }
 }
 
-export default {authenticate};
+async function validateToken(req, res)
+{
+    try{
+        const {authorization} = req.headers;
+        if(authorization)
+        {
+            const tokenId = authorization.split(' ')[1];
+            const validatedTokenId = await oauthServices.verifyTokenId(client, tokenId, CLIENT_ID, req.session._id);
+
+            if(!validatedTokenId)
+            {
+                throw new Error('Validation Failed');
+            }
+            res.send(validatedTokenId);
+            return;
+        }
+        throw new Error('Authorization required');
+    }
+    catch(e)
+    {
+        res.status(500).send(e.message);
+    }
+}
+
+export default {authenticate, validateToken};

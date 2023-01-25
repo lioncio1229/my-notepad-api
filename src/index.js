@@ -60,7 +60,7 @@ app.get('/', (req, res) => {
     });
 });
 
-app.use('/api/auth', oauthRouter.router);
+app.use('/api/account', oauthRouter.router);
 app.use('/api/user', usersRouter.router);
 app.use('/api/notes', notesRouter.router);
 

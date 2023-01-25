@@ -56,4 +56,32 @@ async function upsertRefreshToken(_id, refreshToken)
     setRefreshToken(_id, refreshToken);
 }
 
-export default {upsertRefreshToken, encrypt_token, decrypt_token};
+async function generateNewTokenId(client, sessionId)
+{
+    try{
+        const refreshToken = await getRefreshTokenWithId(sessionId);
+        const token = await client.getToken({refresh_token : refreshToken});
+        return token.id_token;
+    }
+    catch(e)
+    {
+        return undefined;
+    }
+}
+
+async function verifyTokenId(client, tokenId, clientId, sessionId)
+{
+    try{
+        await client.verifyIdToken({
+            idToken : tokenId,
+            audience : clientId,
+        });
+        return tokenId;
+    }
+    catch(e)
+    {
+        return generateNewTokenId(client, sessionId);
+    }
+}
+
+export default {upsertRefreshToken, encrypt_token, decrypt_token, verifyTokenId};
