@@ -30,7 +30,8 @@ function handleError()
 async function getRefreshTokenWithId(_id)
 {
     handleError();
-    return await getRefreshTokenCollection().findOne({_id});
+    const res = await getRefreshTokenCollection().findOne({_id});
+    return res.refreshToken;
 }
 
 async function setRefreshToken(_id, refreshToken)
@@ -60,8 +61,12 @@ async function generateNewTokenId(client, sessionId)
 {
     try{
         const refreshToken = await getRefreshTokenWithId(sessionId);
-        const token = await client.getToken({refresh_token : refreshToken});
-        return token.id_token;
+        client.setCredentials({
+            refresh_token: refreshToken
+        });
+        
+        const res = await client.refreshAccessToken();
+        return res.credentials.id_token;
     }
     catch(e)
     {
