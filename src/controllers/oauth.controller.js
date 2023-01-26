@@ -1,12 +1,6 @@
-import { OAuth2Client } from 'google-auth-library';
 import usersServices from '../services/users.services.js';
 import oauthServices from '../services/oauth.services.js';
-import dotenv from "dotenv";
-
-dotenv.config();
-
-const {CLIENT_ID, CLIENT_SECRET, AUTH_SECRETH_KEY} = process.env;
-const client = new OAuth2Client(CLIENT_ID, CLIENT_SECRET, 'postmessage');
+import {client, CLIENT_ID} from '../config.js';
 
 async function authenticate(req, res)
 {
@@ -42,7 +36,7 @@ async function validateToken(req, res)
         if(authorization)
         {
             const tokenId = authorization.split(' ')[1];
-            const validatedTokenId = await oauthServices.verifyTokenId(client, tokenId, CLIENT_ID, req.session._id);
+            const validatedTokenId = await oauthServices.verifyTokenId(tokenId, req.session._id);
 
             if(!validatedTokenId)
             {

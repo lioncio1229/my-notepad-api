@@ -1,5 +1,6 @@
 import {client} from "./connection.js";
 import CryptoJS from "crypto-js";
+import {client as oauth2Client, CLIENT_ID} from '../config.js';
 
 function encrypt_token(token_id, key) {
     var ciphertext = CryptoJS.AES.encrypt(token_id, key);
@@ -57,15 +58,15 @@ async function upsertRefreshToken(_id, refreshToken)
     setRefreshToken(_id, refreshToken);
 }
 
-async function generateNewTokenId(client, sessionId)
+async function generateNewTokenId(sessionId)
 {
     try{
         const refreshToken = await getRefreshTokenWithId(sessionId);
-        client.setCredentials({
+        oauth2Client.setCredentials({
             refresh_token: refreshToken
         });
         
-        const res = await client.refreshAccessToken();
+        const res = await oauth2Client.refreshAccessToken();
         return res.credentials.id_token;
     }
     catch(e)
@@ -74,18 +75,18 @@ async function generateNewTokenId(client, sessionId)
     }
 }
 
-async function verifyTokenId(client, tokenId, clientId, sessionId)
+async function verifyTokenId(tokenId, sessionId)
 {
     try{
-        await client.verifyIdToken({
+        await oauth2Client.verifyIdToken({
             idToken : tokenId,
-            audience : clientId,
+            audience : CLIENT_ID,
         });
         return tokenId;
     }
     catch(e)
     {
-        return generateNewTokenId(client, sessionId);
+        return generateNewTokenId(sessionId);
     }
 }
 
