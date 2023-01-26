@@ -5,6 +5,7 @@ import connect from './services/connection.js';
 import oauthRouter from './routes/oauth.router.js';
 import notesRouter from './routes/notes.router.js';
 import usersRouter from './routes/users.router.js';
+import validation from './middleware/validation.js';
 import fs from 'fs';
 import dotenv from "dotenv";
 dotenv.config();
@@ -61,8 +62,8 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/account', oauthRouter.router);
-app.use('/api/user', usersRouter.router);
-app.use('/api/notes', notesRouter.router);
+app.use('/api/user', validation, usersRouter.router);
+app.use('/api/notes', validation, notesRouter.router);
 
 connect();
 app.listen(PORT, ()=> console.log(`Listening on host ${PORT}`));
