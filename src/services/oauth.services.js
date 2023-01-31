@@ -1,6 +1,6 @@
 import {client} from "./connection.js";
 import CryptoJS from "crypto-js";
-import {client as oauth2Client, CLIENT_ID} from '../config.js';
+import {client as oauth2Client, CLIENT_ID, AUTH_SECRET_KEY} from '../config.js';
 
 function encrypt_token(token_id, key) {
     var ciphertext = CryptoJS.AES.encrypt(token_id, key);
@@ -32,7 +32,7 @@ async function getRefreshTokenWithId(_id)
 {
     handleError();
     const res = await getRefreshTokenCollection().findOne({_id});
-    return res.refreshToken;
+    return res?.refreshToken;
 }
 
 async function setRefreshToken(_id, refreshToken)
@@ -58,6 +58,35 @@ async function upsertRefreshToken(_id, refreshToken)
     setRefreshToken(_id, refreshToken);
 }
 
+async function setTokenId(_id, tokenId)
+{
+    handleError();
+    await getRefreshTokenCollection().updateOne({_id}, {$set : {tokenId}});
+}
+
+async function getTokenId(_id)
+{
+    handleError();
+    const res = await getRefreshTokenCollection().findOne({_id});
+    return res?.tokenId;
+}
+
+async function blaclistEncryptedToken(_id, encryptedToken)
+{
+    handleError();
+    await getRefreshTokenCollection().updateOne({_id}, {$push : {blacklistedEncryptedToken : encryptedToken}});
+}
+
+async function isBlacklisted(_id, encryptedToken)
+{
+    handleError();
+    const user = await getRefreshTokenCollection().findOne({_id});
+    if(!user) throw new Error("Can't find user");
+
+    const val = (user.blacklistedEncryptedToken || []).includes(encryptedToken);
+    return val;
+}
+
 async function generateNewTokenId(sessionId)
 {
     try{
@@ -67,7 +96,9 @@ async function generateNewTokenId(sessionId)
         });
         
         const res = await oauth2Client.refreshAccessToken();
-        return res.credentials.id_token;
+        const {id_token} = res.credentials;
+        await setTokenId(sessionId, id_token);
+        return id_token;
     }
     catch(e)
     {
@@ -75,13 +106,24 @@ async function generateNewTokenId(sessionId)
     }
 }
 
-async function verifyTokenId(tokenId, sessionId)
+async function verifyTokenId(encryptedTokenId, sessionId)
 {
+    const val = await isBlacklisted(sessionId, encryptedTokenId);
+    if(val) return undefined;
+    
+    const _tokenId = await getTokenId(sessionId);
+    const tokenId = decrypt_token(encryptedTokenId, AUTH_SECRET_KEY);
+
+    if(_tokenId && _tokenId !== tokenId) return undefined;
+
+    await blaclistEncryptedToken(sessionId, encryptedTokenId);
+
     try{
         await oauth2Client.verifyIdToken({
             idToken : tokenId,
             audience : CLIENT_ID,
         });
+        await setTokenId(sessionId, tokenId);
         return tokenId;
     }
     catch(e)
@@ -90,4 +132,4 @@ async function verifyTokenId(tokenId, sessionId)
     }
 }
 
-export default {upsertRefreshToken, encrypt_token, decrypt_token, verifyTokenId};
+export default {upsertRefreshToken, verifyTokenId};

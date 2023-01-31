@@ -6,11 +6,12 @@ import oauthRouter from './routes/oauth.router.js';
 import notesRouter from './routes/notes.router.js';
 import usersRouter from './routes/users.router.js';
 import validation from './middleware/validation.js';
+import { testSession } from './middleware/test/validationTest.js';
 import fs from 'fs';
 import dotenv from "dotenv";
 dotenv.config();
 
-const {NODE_ENV, SECRET_KEY} = process.env;
+const {NODE_ENV, SECRET_KEY, TEST_SESSION_ID} = process.env;
 
 const app = express();
 const PORT = NODE_ENV === 'development' ? 3000 : process.env.PORT;
@@ -53,6 +54,11 @@ if(NODE_ENV === 'production')
 }
 
 app.use(sessions(sessionObj));
+
+if(TEST_SESSION_ID)
+{
+    app.use(testSession(TEST_SESSION_ID));
+}
 
 app.get('/', (req, res) => {
     fs.readFile('public/index.html', (err, data) => {
