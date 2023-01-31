@@ -35,8 +35,8 @@ async function validateToken(req, res)
         const {authorization} = req.headers;
         if(authorization)
         {
-            const tokenId = authorization.split(' ')[1];
-            const validatedTokenId = await oauthServices.verifyTokenId(tokenId, req.session._id);
+            const encryptedTokenId = authorization.split(' ')[1];
+            const validatedTokenId = await oauthServices.verifyTokenId(encryptedTokenId, req.session._id);
 
             if(!validatedTokenId)
             {
