@@ -11,7 +11,7 @@ import fs from 'fs';
 import dotenv from "dotenv";
 dotenv.config();
 
-const {NODE_ENV, SECRET_KEY, TEST_SESSION_ID} = process.env;
+const {NODE_ENV, SECRET_KEY, TEST_SESSION_ID, USE_TEST_SESSION_ID} = process.env;
 
 const app = express();
 const PORT = NODE_ENV === 'development' ? 3000 : process.env.PORT;
@@ -55,7 +55,7 @@ if(NODE_ENV === 'production')
 
 app.use(sessions(sessionObj));
 
-if(TEST_SESSION_ID)
+if(USE_TEST_SESSION_ID === 'true')
 {
     app.use(testSession(TEST_SESSION_ID));
 }
