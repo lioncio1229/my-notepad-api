@@ -1,4 +1,4 @@
-import oauthServices from '../services/oauth.services.js';
+import {client, CLIENT_ID} from '../config.js';
 
 async function validation(req, res, next)
 {
@@ -6,13 +6,12 @@ async function validation(req, res, next)
         const {authorization} = req.headers;
         if(authorization)
         {
-            const encryptedTokenId = authorization.split(' ')[1];
-            const validatedTokenId = await oauthServices.verifyTokenId(encryptedTokenId, req.session._id);
-    
-            if(!validatedTokenId)
-            {
-                throw new Error('Validation Failed');
-            }
+            const tokenId = authorization.split(' ')[1];
+
+            await client.verifyIdToken({
+                idToken : tokenId,
+                audience : CLIENT_ID,
+            });
             next();
             return;
         }

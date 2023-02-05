@@ -18,8 +18,8 @@ async function authenticate(req, res)
 
         const {sub : _id, name, email, picture} = ticket.getPayload();
         await oauthServices.upsertRefreshToken(_id, refresh_token);
+
         req.session._id = _id;
-        
         await usersServices.upsetUser({_id, name, email, picture});
         res.send(id_token);
     }
@@ -29,23 +29,16 @@ async function authenticate(req, res)
     }
 }
 
-async function validateToken(req, res)
+async function generateTokenId(req, res)
 {
     try{
-        const {authorization} = req.headers;
-        if(authorization)
-        {
-            const encryptedTokenId = authorization.split(' ')[1];
-            const validatedTokenId = await oauthServices.verifyTokenId(encryptedTokenId, req.session._id);
-
-            if(!validatedTokenId)
-            {
-                throw new Error('Validation Failed');
-            }
-            res.send(validatedTokenId);
-            return;
-        }
-        throw new Error('Authorization required');
+        const refreshToken = await oauthServices.getRefreshTokenWithId(req.session._id);
+        client.setCredentials({
+            refresh_token: refreshToken
+        });
+        
+        const obj = await client.refreshAccessToken();
+        res.send(obj.credentials.id_token);
     }
     catch(e)
     {
@@ -53,4 +46,4 @@ async function validateToken(req, res)
     }
 }
 
-export default {authenticate, validateToken};
+export default {authenticate, generateTokenId};

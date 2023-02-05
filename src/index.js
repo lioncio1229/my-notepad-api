@@ -41,9 +41,9 @@ app.use(express.json());
 const sessionObj = {
     secret: SECRET_KEY,
     name : 'mnp.sid',
-    saveUninitialized: true,
-    cookie: { maxAge: oneDay},
-    resave: true
+    saveUninitialized: false,
+    cookie: { maxAge: oneDay, httpOnly: true},
+    resave: false
 }
 
 if(NODE_ENV === 'production')
