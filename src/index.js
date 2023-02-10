@@ -15,7 +15,7 @@ const {NODE_ENV, SECRET_KEY, TEST_SESSION_ID, USE_TEST_SESSION_ID} = process.env
 
 const app = express();
 const PORT = NODE_ENV === 'development' ? 3000 : process.env.PORT;
-const oneDay = 1000 * 60 * 60 * 24;
+const tenYears = 10 * 365 * 24 * 60 * 60;
 
 if(NODE_ENV === 'development')
 {
@@ -42,7 +42,7 @@ const sessionObj = {
     secret: SECRET_KEY,
     name : 'mnp.sid',
     saveUninitialized: false,
-    cookie: { maxAge: oneDay, httpOnly: true},
+    cookie: { maxAge: tenYears, httpOnly: true},
     resave: false
 }
 
