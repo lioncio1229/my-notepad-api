@@ -1,22 +1,21 @@
 import express from 'express';
 import cors from 'cors';
 import sessions from 'express-session';
-import { OAuth2Client } from 'google-auth-library';
 import connect from './services/connection.js';
+import oauthRouter from './routes/oauth.router.js';
 import notesRouter from './routes/notes.router.js';
 import usersRouter from './routes/users.router.js';
-import usersServices from './services/users.services.js';
+import validation from './middleware/validation.js';
+import { testSession } from './middleware/test/validationTest.js';
 import fs from 'fs';
 import dotenv from "dotenv";
 dotenv.config();
 
-const {NODE_ENV, SECRET_KEY, CLIENT_ID} = process.env;
+const {NODE_ENV, SECRET_KEY, TEST_SESSION_ID, USE_TEST_SESSION_ID} = process.env;
 
 const app = express();
 const PORT = NODE_ENV === 'development' ? 3000 : process.env.PORT;
-const oneDay = 1000 * 60 * 60 * 24;
-
-const client = new OAuth2Client(CLIENT_ID);
+const tenYears = 10 * 365 * 24 * 60 * 60;
 
 if(NODE_ENV === 'development')
 {
@@ -42,9 +41,9 @@ app.use(express.json());
 const sessionObj = {
     secret: SECRET_KEY,
     name : 'mnp.sid',
-    saveUninitialized: true,
-    cookie: { maxAge: oneDay},
-    resave: true
+    saveUninitialized: false,
+    cookie: { maxAge: tenYears, httpOnly: true},
+    resave: false
 }
 
 if(NODE_ENV === 'production')
@@ -56,6 +55,11 @@ if(NODE_ENV === 'production')
 
 app.use(sessions(sessionObj));
 
+if(USE_TEST_SESSION_ID === 'true')
+{
+    app.use(testSession(TEST_SESSION_ID));
+}
+
 app.get('/', (req, res) => {
     fs.readFile('public/index.html', (err, data) => {
         res.setHeader('Content-Type', 'text/html');
@@ -63,29 +67,9 @@ app.get('/', (req, res) => {
     });
 });
 
-//Authenticate User
-app.post('/api/v1/auth/google', async (req, res) => {
-    try{
-        const {token} = req.body;
-        
-        const ticket = await client.verifyIdToken({
-            idToken : token,
-            audience : CLIENT_ID,
-        });
-        const {sub : _id, name, email, picture} = ticket.getPayload();
-        req.session._id = _id;
-        
-        const user = await usersServices.upsetUser({_id, name, email, picture});
-        res.send(user);
-    }
-    catch(e)
-    {
-        res.status(500).send(e.message);
-    }
-});
-
-app.use('/api/user', usersRouter.router);
-app.use('/api/notes', notesRouter.router);
+app.use('/api/account', oauthRouter.router);
+app.use('/api/user', validation, usersRouter.router);
+app.use('/api/notes', validation, notesRouter.router);
 
 connect();
 app.listen(PORT, ()=> console.log(`Listening on host ${PORT}`));
